@@ -15,34 +15,52 @@ function getOrCreateHUD(): HTMLDivElement {
   hudElement.id = 'easy-egov-jump-hud';
   Object.assign(hudElement.style, {
     position: 'fixed',
-    bottom: '40px',
+    bottom: '60px',
     left: '50%',
-    transform: 'translateX(-50%) translateY(20px)',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    padding: '12px 24px',
-    borderRadius: '16px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.04)',
-    border: '1px solid rgba(255, 255, 255, 0.4)',
+    transform: 'translateX(-50%) translateY(30px)',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    padding: '16px 32px',
+    borderRadius: '24px',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.5)',
     color: '#1a1a1a',
-    fontSize: '18px',
-    fontWeight: '600',
+    fontSize: '24px',
+    fontWeight: '700',
     fontFamily: '"Outfit", "Inter", "Roboto", sans-serif',
     zIndex: '10000',
     display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
+    alignItems: 'baseline',
+    gap: '16px',
     opacity: '0',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: 'all 0.4s cubic-bezier(0.23, 1, 0.32, 1)',
     pointerEvents: 'none',
-    letterSpacing: '0.05em'
+    letterSpacing: '-0.02em',
+    scale: '0.9'
   });
 
   hudElement.innerHTML = `
-    <span style="opacity: 0.5; font-size: 14px; text-transform: uppercase;">Jump to</span>
-    <span id="easy-egov-jump-text"></span>
+    <span style="opacity: 0.4; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Jump to</span>
+    <div id="easy-egov-jump-text-container" style="display: flex; align-items: baseline; gap: 4px;">
+      <span id="easy-egov-jump-text"></span>
+      <span id="easy-egov-jump-cursor" style="width: 2px; height: 24px; background: #007AFF; display: inline-block; animation: blink 1s infinite; margin-left: 4px;"></span>
+    </div>
   `;
+
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    #easy-egov-jump-text {
+      background: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  `;
+  document.head.appendChild(style);
 
   document.body.appendChild(hudElement);
   return hudElement;
@@ -64,9 +82,11 @@ function updateHUD(text: string) {
     if (textEl) textEl.textContent = display;
     hud.style.opacity = '1';
     hud.style.transform = 'translateX(-50%) translateY(0)';
+    hud.style.scale = '1';
   } else {
     hud.style.opacity = '0';
-    hud.style.transform = 'translateX(-50%) translateY(20px)';
+    hud.style.transform = 'translateX(-50%) translateY(30px)';
+    hud.style.scale = '0.9';
   }
 }
 

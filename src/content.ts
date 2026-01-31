@@ -12,55 +12,62 @@ function shouldProcessNode(node: Node): boolean {
   return true;
 }
 
+const processedNodes = new WeakSet<Node>();
+
 function processNode(node: Node) {
-  if (!shouldProcessNode(node)) return;
+  if (!shouldProcessNode(node) || processedNodes.has(node)) return;
 
   const text = node.textContent;
   if (!text) return;
 
-  // Check if text contains any Japanese numerals or "箇月" before trying to convert
   if (/[〇一二三四五六七八九十百千万億兆]/.test(text) || text.includes('箇月')) {
     const newText = convertJapaneseNumeralToNumber(text);
     if (newText !== text) {
       node.textContent = newText;
+      // Mark as processed to avoid re-processing this exact node until it changes again
+      // Actually, if we change the text, characterData mutation will fire.
+      // But since we include Arabic numerals now, the test above will fail next time.
+      processedNodes.add(node);
     }
   }
 }
 
 function walkAndConvert(root: Node) {
+  if (root.nodeType === Node.TEXT_NODE) {
+    processNode(root);
+    return;
+  }
+
   const walker = document.createTreeWalker(
     root,
     NodeFilter.SHOW_TEXT,
     {
       acceptNode: (node) => {
-        return shouldProcessNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        return shouldProcessNode(node) && !processedNodes.has(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
       }
     }
   );
 
-  const nodesToProcess: Node[] = [];
-  while (walker.nextNode()) {
-    nodesToProcess.push(walker.currentNode);
+  let node: Node | null;
+  while (node = walker.nextNode()) {
+    processNode(node);
   }
-
-  nodesToProcess.forEach(processNode);
 }
 
 // Initial conversion
 walkAndConvert(document.body);
 
-// Observe changes
+// Observe changes with debounce/batching if needed, but for now just optimize the handlers
 const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    mutation.addedNodes.forEach((node) => {
-      // If a new element is added, walk its subtree
-      walkAndConvert(node);
-    });
-
-    if (mutation.type === 'characterData') {
-      processNode(mutation.target);
+  for (const mutation of mutations) {
+    if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach(node => walkAndConvert(node));
+    } else if (mutation.type === 'characterData') {
+        // If text content changed, we might need to re-process
+        processedNodes.delete(mutation.target);
+        processNode(mutation.target);
     }
-  });
+  }
 });
 
 observer.observe(document.body, {
