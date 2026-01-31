@@ -52,11 +52,11 @@ export function convertJapaneseNumeralToNumber(text: string): string {
     if (saiNum) return `${Number(convertString(saiNum)).toLocaleString()}歳`;
     if (hanNum) return `${Number(convertString(hanNum)).toLocaleString()}犯`;
 
-    if (genericOrdinal) return `第${Number(convertString(genericOrdinal)).toLocaleString()}`;
-    if (genericPrevious) return `前${Number(convertString(genericPrevious)).toLocaleString()}`;
+    if (genericOrdinal) return `第${Number(convertString(genericOrdinal))}`;
+    if (genericPrevious) return `前${Number(convertString(genericPrevious))}`;
 
     if (noNum) {
-      return `の${Number(convertString(noNum)).toLocaleString()}`;
+      return `の${Number(convertString(noNum))}`;
     }
 
     if (manNum) {
